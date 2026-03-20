@@ -10,3 +10,22 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
+      - ALLOWED_ORIGINS=http://192.168.1.6:3000,http://100.75.217.127:3000
+    develop:
+      watch:
+        - action: rebuild
+          path: ./apps/web
+          ignore:
+            - node_modules/
+        - action: sync+restart
+          path: ./apps/server/src
+          target: /app/apps/server/src
+        - action: sync+restart
+          path: ./packages/shared
+          target: /app/packages/shared
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: ./package.json
+        - action: rebuild
+          path: ./bun.lock

@@ -23,8 +23,8 @@ function createSession(c: Context, userId: string) {
     .run();
   setCookie(c, "session", token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: true,
+    sameSite: "none",
     path: "/",
     maxAge: SESSION_DURATION / 1000,
   });
