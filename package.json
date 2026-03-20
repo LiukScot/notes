@@ -1,0 +1,14 @@
+{
+  "name": "notes",
+  "private": true,
+  "packageManager": "bun@1.3.10",
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev": "bun run --filter '@notes/server' dev & bun run --filter '@notes/web' dev & wait",
+    "build": "turbo build",
+    "typecheck": "turbo typecheck"
+  },
+  "devDependencies": {
+    "turbo": "^2"
+  }
+}

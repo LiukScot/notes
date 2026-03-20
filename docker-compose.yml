@@ -1,0 +1,12 @@
+services:
+  notes:
+    build: .
+    container_name: notes
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./apps/server/data:/app/apps/server/data
+    environment:
+      - NODE_ENV=production
+      - PORT=3000

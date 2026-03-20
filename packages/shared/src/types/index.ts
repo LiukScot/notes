@@ -1,0 +1,78 @@
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  avatarUrl: string | null;
+  createdAt: number;
+}
+
+export interface Session {
+  id: string;
+  userId: string;
+  token: string;
+  expiresAt: number;
+}
+
+export interface Page {
+  id: string;
+  parentPageId: string | null;
+  title: string;
+  icon: string | null;
+  coverImage: string | null;
+  isDatabase: boolean;
+  createdBy: string;
+  createdAt: number;
+  updatedAt: number;
+  archivedAt: number | null;
+}
+
+export interface Block {
+  id: string;
+  pageId: string;
+  parentId: string | null;
+  type: string;
+  content: unknown;
+  properties: unknown;
+  position: number;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface DatabaseProperty {
+  id: string;
+  pageId: string;
+  name: string;
+  type: string;
+  config: unknown;
+  position: number;
+}
+
+export interface DatabaseRow {
+  id: string;
+  databaseId: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface DatabaseCellValue {
+  rowId: string;
+  propertyId: string;
+  value: unknown;
+}
+
+export interface Link {
+  id: string;
+  sourcePageId: string;
+  sourceBlockId: string | null;
+  targetPageId: string;
+  type: "mention" | "link" | "relation";
+  createdAt: number;
+}
+
+export interface PageTreeItem {
+  id: string;
+  title: string;
+  icon: string | null;
+  parentPageId: string | null;
+  children: PageTreeItem[];
+}
