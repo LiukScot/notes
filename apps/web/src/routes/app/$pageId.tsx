@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { useState, useEffect, useRef } from "react";
 import { Editor } from "@/components/editor/Editor";
+import { DatabaseView } from "@/components/database/DatabaseView";
 
 export const Route = createFileRoute("/app/$pageId")({
   component: PageView,
@@ -78,11 +79,15 @@ function PageView() {
         className="mb-4 w-full border-none bg-transparent text-4xl font-bold outline-none"
         style={{ color: "var(--color-text)" }}
       />
-      <Editor
-        key={pageId}
-        pageId={pageId}
-        initialContent={blocksData?.content ?? null}
-      />
+      {pageData.page.isDatabase ? (
+        <DatabaseView pageId={pageId} />
+      ) : (
+        <Editor
+          key={pageId}
+          pageId={pageId}
+          initialContent={blocksData?.content ?? null}
+        />
+      )}
     </div>
   );
 }

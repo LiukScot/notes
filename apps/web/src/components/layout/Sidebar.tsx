@@ -5,6 +5,7 @@ import { useAppStore } from "@/lib/store";
 import {
   Plus,
   FileText,
+  Table2,
   ChevronRight,
   LogOut,
   PanelLeftClose,
@@ -30,6 +31,14 @@ export function Sidebar() {
   const createMutation = useMutation({
     mutationFn: (parentPageId?: string) =>
       api.pages.create({ title: "Untitled", parentPageId }),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["pages"] });
+      navigate({ to: "/app/$pageId", params: { pageId: result.page.id } });
+    },
+  });
+
+  const createDatabaseMutation = useMutation({
+    mutationFn: () => api.databases.create({ title: "Untitled Database" }),
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["pages"] });
       navigate({ to: "/app/$pageId", params: { pageId: result.page.id } });
@@ -98,13 +107,24 @@ export function Sidebar() {
           >
             Pages
           </span>
-          <button
-            onClick={() => createMutation.mutate(undefined)}
-            className="rounded p-0.5 transition-colors hover:opacity-70"
-            style={{ color: "var(--color-text-secondary)" }}
-          >
-            <Plus size={14} />
-          </button>
+          <div className="flex items-center gap-0.5">
+            <button
+              onClick={() => createDatabaseMutation.mutate()}
+              className="rounded p-0.5 transition-colors hover:opacity-70"
+              style={{ color: "var(--color-text-secondary)" }}
+              title="New database"
+            >
+              <Table2 size={14} />
+            </button>
+            <button
+              onClick={() => createMutation.mutate(undefined)}
+              className="rounded p-0.5 transition-colors hover:opacity-70"
+              style={{ color: "var(--color-text-secondary)" }}
+              title="New page"
+            >
+              <Plus size={14} />
+            </button>
+          </div>
         </div>
 
         {tree.map((item) => (
@@ -191,8 +211,13 @@ function PageTreeNode({
         </button>
 
         <span className="mr-1.5 text-base">{item.icon || ""}</span>
-        <FileText size={14} className={item.icon ? "hidden" : "mr-1.5 shrink-0"}
-          style={{ color: "var(--color-text-secondary)" }} />
+        {item.isDatabase ? (
+          <Table2 size={14} className={item.icon ? "hidden" : "mr-1.5 shrink-0"}
+            style={{ color: "var(--color-text-secondary)" }} />
+        ) : (
+          <FileText size={14} className={item.icon ? "hidden" : "mr-1.5 shrink-0"}
+            style={{ color: "var(--color-text-secondary)" }} />
+        )}
         <span className="flex-1 truncate">{item.title || "Untitled"}</span>
 
         <div className="hidden items-center gap-0.5 group-hover:flex">
@@ -241,6 +266,7 @@ function buildPageTree(
     parentPageId: string | null;
     title: string;
     icon: string | null;
+    isDatabase: boolean;
   }>
 ): PageTreeItem[] {
   const map = new Map<string, PageTreeItem>();
@@ -251,6 +277,7 @@ function buildPageTree(
       id: p.id,
       title: p.title,
       icon: p.icon,
+      isDatabase: p.isDatabase,
       parentPageId: p.parentPageId,
       children: [],
     });

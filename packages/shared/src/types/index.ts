@@ -38,11 +38,13 @@ export interface Block {
   updatedAt: number;
 }
 
+export type PropertyType = "text" | "number" | "select" | "multi_select" | "date" | "checkbox";
+
 export interface DatabaseProperty {
   id: string;
   pageId: string;
   name: string;
-  type: string;
+  type: PropertyType;
   config: unknown;
   position: number;
 }
@@ -60,6 +62,10 @@ export interface DatabaseCellValue {
   value: unknown;
 }
 
+export interface DatabaseRowWithCells extends DatabaseRow {
+  cells: Record<string, unknown>;
+}
+
 export interface Link {
   id: string;
   sourcePageId: string;
@@ -73,6 +79,7 @@ export interface PageTreeItem {
   id: string;
   title: string;
   icon: string | null;
+  isDatabase: boolean;
   parentPageId: string | null;
   children: PageTreeItem[];
 }

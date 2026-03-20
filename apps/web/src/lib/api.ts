@@ -1,10 +1,18 @@
 import type {
   User,
   Page,
+  DatabaseProperty,
+  DatabaseRowWithCells,
+  DatabaseCellValue,
   SignupInput,
   LoginInput,
   CreatePageInput,
   UpdatePageInput,
+  CreateDatabaseInput,
+  CreatePropertyInput,
+  UpdatePropertyInput,
+  CreateRowInput,
+  UpdateCellInput,
 } from "@notes/shared";
 
 const BASE = "/api";
@@ -81,5 +89,59 @@ export const api = {
         method: "PUT",
         body: JSON.stringify({ content }),
       }),
+  },
+  databases: {
+    create: (data: CreateDatabaseInput) =>
+      request<{ page: Page }>("/databases", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    get: (pageId: string) =>
+      request<{ properties: DatabaseProperty[]; rows: DatabaseRowWithCells[] }>(
+        `/databases/${pageId}`
+      ),
+    createProperty: (pageId: string, data: CreatePropertyInput) =>
+      request<{ property: DatabaseProperty }>(
+        `/databases/${pageId}/properties`,
+        { method: "POST", body: JSON.stringify(data) }
+      ),
+    updateProperty: (
+      pageId: string,
+      propertyId: string,
+      data: UpdatePropertyInput
+    ) =>
+      request<{ property: DatabaseProperty }>(
+        `/databases/${pageId}/properties/${propertyId}`,
+        { method: "PATCH", body: JSON.stringify(data) }
+      ),
+    deleteProperty: (pageId: string, propertyId: string) =>
+      request<{ ok: boolean }>(
+        `/databases/${pageId}/properties/${propertyId}`,
+        { method: "DELETE" }
+      ),
+    reorderProperties: (pageId: string, propertyIds: string[]) =>
+      request<{ ok: boolean }>(
+        `/databases/${pageId}/properties/reorder`,
+        { method: "PUT", body: JSON.stringify({ propertyIds }) }
+      ),
+    createRow: (pageId: string, data?: CreateRowInput) =>
+      request<{ row: DatabaseRowWithCells }>(`/databases/${pageId}/rows`, {
+        method: "POST",
+        body: JSON.stringify(data || {}),
+      }),
+    deleteRow: (pageId: string, rowId: string) =>
+      request<{ ok: boolean }>(`/databases/${pageId}/rows/${rowId}`, {
+        method: "DELETE",
+      }),
+    updateCell: (
+      pageId: string,
+      rowId: string,
+      propertyId: string,
+      data: UpdateCellInput
+    ) =>
+      request<{ cell: DatabaseCellValue }>(
+        `/databases/${pageId}/rows/${rowId}/cells/${propertyId}`,
+        { method: "PUT", body: JSON.stringify(data) }
+      ),
   },
 };

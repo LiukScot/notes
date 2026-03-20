@@ -5,15 +5,24 @@ import { serveStatic } from "hono/bun";
 import { authRoutes } from "./routes/auth.js";
 import { pageRoutes } from "./routes/pages.js";
 import { blockRoutes } from "./routes/blocks.js";
+import { databaseRoutes } from "./routes/databases.js";
 import { existsSync } from "fs";
 import { resolve } from "path";
 
 const app = new Hono();
 
 app.use(logger());
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
+  : [];
+
 app.use(
   cors({
-    origin: (origin) => origin, // allow same-origin and dev access from LAN
+    origin: (origin) => {
+      if (!origin) return origin; // allow non-browser requests (curl, etc.)
+      if (allowedOrigins.includes(origin)) return origin;
+      return null;
+    },
     credentials: true,
   })
 );
@@ -22,7 +31,8 @@ const api = app
   .basePath("/api")
   .route("/auth", authRoutes)
   .route("/pages", pageRoutes)
-  .route("/blocks", blockRoutes);
+  .route("/blocks", blockRoutes)
+  .route("/databases", databaseRoutes);
 
 // In production, serve the built frontend
 const staticDir = resolve(import.meta.dir, "../../web/dist");
