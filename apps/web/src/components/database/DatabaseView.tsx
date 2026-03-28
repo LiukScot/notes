@@ -11,9 +11,10 @@ import type { DatabaseRowWithCells, PropertyType } from "@notes/shared";
 
 interface DatabaseViewProps {
   pageId: string;
+  isLocked?: boolean;
 }
 
-export function DatabaseView({ pageId }: DatabaseViewProps) {
+export function DatabaseView({ pageId, isLocked = false }: DatabaseViewProps) {
   const queryClient = useQueryClient();
   const queryKey = ["database", pageId];
 
@@ -147,6 +148,7 @@ export function DatabaseView({ pageId }: DatabaseViewProps) {
         properties={properties}
         sort={sort}
         filter={filter}
+        isLocked={isLocked}
         onSortChange={setSort}
         onFilterChange={setFilter}
         onAddProperty={(name, type) =>
@@ -158,6 +160,7 @@ export function DatabaseView({ pageId }: DatabaseViewProps) {
         style={{ borderColor: "var(--color-border)" }}
       >
         <DatabaseTable
+          isLocked={isLocked}
           properties={properties}
           rows={processedRows}
           onCellChange={(rowId, propertyId, value) =>

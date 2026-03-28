@@ -11,6 +11,9 @@
     --color-primary: #2383e2;
     --color-primary-hover: #1b6ec2;
     --color-danger: #eb5757;
+    --page-font-default: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, sans-serif;
+    --page-font-serif: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+    --page-font-mono: "SFMono-Regular", "JetBrains Mono", "Cascadia Code", Consolas, monospace;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -29,8 +32,7 @@
 
   body {
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-      sans-serif;
+    font-family: var(--page-font-default);
     background-color: var(--color-bg);
     color: var(--color-text);
     -webkit-font-smoothing: antialiased;
@@ -42,5 +44,59 @@
 
   .hoverable:hover {
     background-color: var(--color-bg-hover);
+  }
+
+  .page-frame {
+    min-height: 100%;
+  }
+
+  .page-frame > div {
+    max-width: 52rem;
+  }
+
+  .page-frame-wide > div {
+    max-width: 78rem;
+  }
+
+  .page-font-default {
+    font-family: var(--page-font-default);
+  }
+
+  .page-font-serif {
+    font-family: var(--page-font-serif);
+  }
+
+  .page-font-mono {
+    font-family: var(--page-font-mono);
+  }
+
+  .page-shell {
+    position: relative;
+  }
+
+  .page-cover {
+    position: relative;
+  }
+
+  .page-action-chip {
+    border: 1px solid var(--color-border);
+    background: color-mix(in srgb, var(--color-bg) 88%, transparent);
+    color: var(--color-text-secondary);
+    border-radius: 999px;
+    padding: 0.5rem 0.875rem;
+    backdrop-filter: blur(6px);
+    transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease;
+  }
+
+  .page-action-chip:hover:not(:disabled),
+  .page-empty-action:hover:not(:disabled) {
+    background-color: var(--color-bg-hover);
+    color: var(--color-text);
+  }
+
+  .page-empty-action:disabled,
+  .page-action-chip:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
   }
 }

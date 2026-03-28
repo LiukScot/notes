@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+export const pageFontFamilySchema = z.enum(["default", "serif", "mono"]);
+export const pageContentWidthSchema = z.enum(["normal", "wide"]);
+
 export const signupSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
@@ -22,6 +25,14 @@ export const updatePageSchema = z.object({
   icon: z.string().nullable().optional(),
   coverImage: z.string().nullable().optional(),
   parentPageId: z.string().nullable().optional(),
+  fontFamily: pageFontFamilySchema.optional(),
+  contentWidth: pageContentWidthSchema.optional(),
+  isLocked: z.boolean().optional(),
+});
+
+export const reorderPagesSchema = z.object({
+  parentPageId: z.string().nullable(),
+  orderedPageIds: z.array(z.string()).min(1),
 });
 
 // Database schemas
@@ -67,6 +78,7 @@ export type SignupInput = z.infer<typeof signupSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type CreatePageInput = z.infer<typeof createPageSchema>;
 export type UpdatePageInput = z.infer<typeof updatePageSchema>;
+export type ReorderPagesInput = z.infer<typeof reorderPagesSchema>;
 export type CreateDatabaseInput = z.infer<typeof createDatabaseSchema>;
 export type CreatePropertyInput = z.infer<typeof createPropertySchema>;
 export type UpdatePropertyInput = z.infer<typeof updatePropertySchema>;

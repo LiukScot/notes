@@ -26,6 +26,10 @@ export const pages = sqliteTable("pages", {
   title: text("title").notNull().default("Untitled"),
   icon: text("icon"),
   coverImage: text("cover_image"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  fontFamily: text("font_family").notNull().default("default"),
+  contentWidth: text("content_width").notNull().default("normal"),
+  isLocked: integer("is_locked", { mode: "boolean" }).notNull().default(false),
   isDatabase: integer("is_database", { mode: "boolean" })
     .notNull()
     .default(false),

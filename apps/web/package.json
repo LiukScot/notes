@@ -5,10 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@emoji-mart/data": "^1.2.1",
+    "@emoji-mart/react": "^1.1.1",
     "@blocknote/ariakit": "^0.47.1",
     "@blocknote/core": "^0.47.1",
     "@blocknote/mantine": "^0.47.1",
@@ -20,6 +22,7 @@
     "@radix-ui/react-tooltip": "^1",
     "@tanstack/react-query": "^5",
     "@tanstack/react-router": "^1",
+    "emoji-mart": "^5.6.0",
     "hono": "^4",
     "lucide-react": "^0.468",
     "react": "^19",

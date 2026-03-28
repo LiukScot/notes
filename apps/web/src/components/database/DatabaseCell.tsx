@@ -4,25 +4,27 @@ import type { DatabaseProperty } from "@notes/shared";
 interface DatabaseCellProps {
   property: DatabaseProperty;
   value: unknown;
+  disabled?: boolean;
   onChange: (value: unknown) => void;
 }
 
-export function DatabaseCell({ property, value, onChange }: DatabaseCellProps) {
+export function DatabaseCell({ property, value, onChange, disabled = false }: DatabaseCellProps) {
   switch (property.type) {
     case "checkbox":
-      return <CheckboxCell value={value} onChange={onChange} />;
+      return <CheckboxCell value={value} onChange={onChange} disabled={disabled} />;
     case "text":
-      return <TextCell value={value} onChange={onChange} />;
+      return <TextCell value={value} onChange={onChange} disabled={disabled} />;
     case "number":
-      return <NumberCell value={value} onChange={onChange} />;
+      return <NumberCell value={value} onChange={onChange} disabled={disabled} />;
     case "date":
-      return <DateCell value={value} onChange={onChange} />;
+      return <DateCell value={value} onChange={onChange} disabled={disabled} />;
     case "select":
       return (
         <SelectCell
           value={value}
           onChange={onChange}
           options={getOptions(property)}
+          disabled={disabled}
         />
       );
     case "multi_select":
@@ -31,10 +33,11 @@ export function DatabaseCell({ property, value, onChange }: DatabaseCellProps) {
           value={value}
           onChange={onChange}
           options={getOptions(property)}
+          disabled={disabled}
         />
       );
     default:
-      return <TextCell value={value} onChange={onChange} />;
+      return <TextCell value={value} onChange={onChange} disabled={disabled} />;
   }
 }
 
@@ -49,9 +52,11 @@ function getOptions(property: DatabaseProperty): string[] {
 function TextCell({
   value,
   onChange,
+  disabled,
 }: {
   value: unknown;
   onChange: (v: unknown) => void;
+  disabled?: boolean;
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(String(value ?? ""));
@@ -75,8 +80,8 @@ function TextCell({
   if (!editing) {
     return (
       <div
-        className="h-full w-full cursor-text truncate px-2 py-1 text-sm"
-        onClick={() => setEditing(true)}
+        className={`h-full w-full truncate px-2 py-1 text-sm ${disabled ? "" : "cursor-text"}`}
+        onClick={() => !disabled && setEditing(true)}
       >
         {String(value ?? "")}
       </div>
@@ -106,9 +111,11 @@ function TextCell({
 function NumberCell({
   value,
   onChange,
+  disabled,
 }: {
   value: unknown;
   onChange: (v: unknown) => void;
+  disabled?: boolean;
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(String(value ?? ""));
@@ -133,8 +140,8 @@ function NumberCell({
   if (!editing) {
     return (
       <div
-        className="h-full w-full cursor-text truncate px-2 py-1 text-sm"
-        onClick={() => setEditing(true)}
+        className={`h-full w-full truncate px-2 py-1 text-sm ${disabled ? "" : "cursor-text"}`}
+        onClick={() => !disabled && setEditing(true)}
       >
         {value != null ? String(value) : ""}
       </div>
@@ -164,15 +171,18 @@ function NumberCell({
 function DateCell({
   value,
   onChange,
+  disabled,
 }: {
   value: unknown;
   onChange: (v: unknown) => void;
+  disabled?: boolean;
 }) {
   return (
     <input
       type="date"
       value={String(value ?? "")}
       onChange={(e) => onChange(e.target.value || null)}
+      disabled={disabled}
       className="h-full w-full border-none bg-transparent px-2 py-1 text-sm outline-none"
       style={{ color: "var(--color-text)" }}
     />
@@ -182,9 +192,11 @@ function DateCell({
 function CheckboxCell({
   value,
   onChange,
+  disabled,
 }: {
   value: unknown;
   onChange: (v: unknown) => void;
+  disabled?: boolean;
 }) {
   return (
     <div className="flex h-full w-full items-center px-2">
@@ -192,7 +204,8 @@ function CheckboxCell({
         type="checkbox"
         checked={Boolean(value)}
         onChange={(e) => onChange(e.target.checked)}
-        className="h-4 w-4 cursor-pointer"
+        disabled={disabled}
+        className={`h-4 w-4 ${disabled ? "" : "cursor-pointer"}`}
       />
     </div>
   );
@@ -216,10 +229,12 @@ function SelectCell({
   value,
   onChange,
   options,
+  disabled,
 }: {
   value: unknown;
   onChange: (v: unknown) => void;
   options: string[];
+  disabled?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -240,8 +255,8 @@ function SelectCell({
   return (
     <div ref={ref} className="relative h-full w-full">
       <div
-        className="flex h-full w-full cursor-pointer items-center px-2 py-1"
-        onClick={() => setOpen(!open)}
+        className={`flex h-full w-full items-center px-2 py-1 ${disabled ? "" : "cursor-pointer"}`}
+        onClick={() => !disabled && setOpen(!open)}
       >
         {selected && (
           <span
@@ -294,10 +309,12 @@ function MultiSelectCell({
   value,
   onChange,
   options,
+  disabled,
 }: {
   value: unknown;
   onChange: (v: unknown) => void;
   options: string[];
+  disabled?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -316,6 +333,7 @@ function MultiSelectCell({
   const selected: string[] = Array.isArray(value) ? (value as string[]) : [];
 
   const toggle = (opt: string) => {
+    if (disabled) return;
     const next = selected.includes(opt)
       ? selected.filter((s) => s !== opt)
       : [...selected, opt];
@@ -325,8 +343,8 @@ function MultiSelectCell({
   return (
     <div ref={ref} className="relative h-full w-full">
       <div
-        className="flex h-full w-full cursor-pointer flex-wrap items-center gap-1 px-2 py-1"
-        onClick={() => setOpen(!open)}
+        className={`flex h-full w-full flex-wrap items-center gap-1 px-2 py-1 ${disabled ? "" : "cursor-pointer"}`}
+        onClick={() => !disabled && setOpen(!open)}
       >
         {selected.map((s, i) => (
           <span

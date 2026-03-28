@@ -4,6 +4,8 @@ import { api } from "@/lib/api";
 import { useState, useEffect, useRef } from "react";
 import { Editor } from "@/components/editor/Editor";
 import { DatabaseView } from "@/components/database/DatabaseView";
+import { PageChrome } from "@/components/page/PageChrome";
+import type { UpdatePageInput } from "@notes/shared";
 
 export const Route = createFileRoute("/app/$pageId")({
   component: PageView,
@@ -16,6 +18,11 @@ function PageView() {
   const { data: pageData, isLoading: pageLoading } = useQuery({
     queryKey: ["page", pageId],
     queryFn: () => api.pages.get(pageId),
+  });
+
+  const { data: pagesData } = useQuery({
+    queryKey: ["pages"],
+    queryFn: () => api.pages.list(),
   });
 
   const { data: blocksData, isLoading: blocksLoading } = useQuery({
@@ -33,17 +40,35 @@ function PageView() {
     }
   }, [pageData?.page, pageId]);
 
+  const invalidatePageData = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["pages"] }),
+      queryClient.invalidateQueries({ queryKey: ["page", pageId] }),
+    ]);
+  };
+
   const updateMutation = useMutation({
-    mutationFn: (newTitle: string) =>
-      api.pages.update(pageId, { title: newTitle }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["pages"] });
-    },
+    mutationFn: (input: UpdatePageInput) => api.pages.update(pageId, input),
+    onSuccess: invalidatePageData,
+  });
+
+  const uploadCoverMutation = useMutation({
+    mutationFn: (file: File) => api.pages.uploadCover(pageId, file),
+    onSuccess: invalidatePageData,
+  });
+
+  const removeCoverMutation = useMutation({
+    mutationFn: () => api.pages.removeCover(pageId),
+    onSuccess: invalidatePageData,
   });
 
   const handleTitleBlur = () => {
-    if (pageData?.page && title !== pageData.page.title) {
-      updateMutation.mutate(title);
+    if (
+      pageData?.page &&
+      !pageData.page.isLocked &&
+      title !== pageData.page.title
+    ) {
+      updateMutation.mutate({ title });
     }
   };
 
@@ -63,31 +88,53 @@ function PageView() {
     );
   }
 
+  const page = pageData.page;
+  const pages = pagesData?.pages || [page];
+
   return (
-    <div className="mx-auto max-w-3xl px-6 py-16 md:px-16">
-      {pageData.page.icon && (
-        <div className="mb-1 text-4xl">{pageData.page.icon}</div>
-      )}
-      <input
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        onBlur={handleTitleBlur}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") e.currentTarget.blur();
-        }}
-        placeholder="Untitled"
-        className="mb-4 w-full border-none bg-transparent text-4xl font-bold outline-none"
-        style={{ color: "var(--color-text)" }}
-      />
-      {pageData.page.isDatabase ? (
-        <DatabaseView pageId={pageId} />
-      ) : (
-        <Editor
-          key={pageId}
-          pageId={pageId}
-          initialContent={blocksData?.content ?? null}
+    <div
+      className={`page-frame ${page.contentWidth === "wide" ? "page-frame-wide" : ""} ${fontClassName(page.fontFamily)}`}
+    >
+      <div className="mx-auto px-6 py-10 md:px-16">
+        <PageChrome
+          page={page}
+          pages={pages}
+          title={title}
+          setTitle={setTitle}
+          onTitleCommit={handleTitleBlur}
+          onPatch={async (input) => {
+            await updateMutation.mutateAsync(input);
+          }}
+          onUploadCover={async (file) => {
+            await uploadCoverMutation.mutateAsync(file);
+          }}
+          onRemoveCover={async () => {
+            await removeCoverMutation.mutateAsync();
+          }}
         />
-      )}
+
+        {page.isDatabase ? (
+          <DatabaseView pageId={pageId} isLocked={page.isLocked} />
+        ) : (
+          <Editor
+            key={pageId}
+            pageId={pageId}
+            initialContent={blocksData?.content ?? null}
+            editable={!page.isLocked}
+          />
+        )}
+      </div>
     </div>
   );
+}
+
+function fontClassName(fontFamily: "default" | "serif" | "mono") {
+  switch (fontFamily) {
+    case "serif":
+      return "page-font-serif";
+    case "mono":
+      return "page-font-mono";
+    default:
+      return "page-font-default";
+  }
 }

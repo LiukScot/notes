@@ -22,6 +22,7 @@ const TYPE_ICONS: Record<PropertyType, typeof Type> = {
 
 interface DatabaseColumnHeaderProps {
   property: DatabaseProperty;
+  isLocked?: boolean;
   onRename: (name: string) => void;
   onDelete: () => void;
   onDragStart: (e: React.DragEvent) => void;
@@ -32,6 +33,7 @@ interface DatabaseColumnHeaderProps {
 
 export function DatabaseColumnHeader({
   property,
+  isLocked = false,
   onRename,
   onDelete,
   onDragStart,
@@ -63,6 +65,7 @@ export function DatabaseColumnHeader({
   const Icon = TYPE_ICONS[property.type as PropertyType] || Type;
 
   const handleResizeStart = (e: React.MouseEvent) => {
+    if (isLocked) return;
     e.preventDefault();
     e.stopPropagation();
     const startX = e.clientX;
@@ -81,7 +84,7 @@ export function DatabaseColumnHeader({
     <div
       className="group relative flex items-center border-r px-2 py-1.5"
       style={{ borderColor: "var(--color-border)" }}
-      draggable
+      draggable={!isLocked}
       onDragStart={onDragStart}
       onDragOver={onDragOver}
       onDrop={onDrop}
@@ -115,7 +118,7 @@ export function DatabaseColumnHeader({
         <span
           className="flex-1 cursor-text truncate text-xs font-medium"
           style={{ color: "var(--color-text-secondary)" }}
-          onDoubleClick={() => setEditing(true)}
+          onDoubleClick={() => !isLocked && setEditing(true)}
         >
           {property.name}
         </span>
@@ -125,14 +128,15 @@ export function DatabaseColumnHeader({
           e.stopPropagation();
           onDelete();
         }}
-        className="ml-1 shrink-0 rounded p-0.5 opacity-0 transition-opacity hover:opacity-70 group-hover:opacity-100"
+        className="ml-1 shrink-0 rounded p-0.5 opacity-0 transition-opacity hover:opacity-70 group-hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-40"
         style={{ color: "var(--color-text-secondary)" }}
+        disabled={isLocked}
       >
         <Trash2 size={11} />
       </button>
       {/* Resize handle */}
       <div
-        className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-blue-500/50"
+        className={`absolute right-0 top-0 h-full w-1 ${isLocked ? "cursor-default" : "cursor-col-resize hover:bg-blue-500/50"}`}
         onMouseDown={handleResizeStart}
       />
     </div>

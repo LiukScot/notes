@@ -8,7 +8,7 @@ import {
   databaseRows,
   databaseCellValues,
 } from "../db/schema.js";
-import { eq, and } from "drizzle-orm";
+import { eq, and, isNull, asc } from "drizzle-orm";
 import {
   createDatabaseSchema,
   createPropertySchema,
@@ -31,6 +31,30 @@ function getOwnedDatabasePage(userId: string, pageId: string) {
       )
     )
     .get();
+}
+
+function getNextSortOrder(userId: string, parentPageId: string | null) {
+  const siblings = db
+    .select({ sortOrder: pages.sortOrder })
+    .from(pages)
+    .where(
+      and(
+        eq(pages.createdBy, userId),
+        parentPageId === null ? isNull(pages.parentPageId) : eq(pages.parentPageId, parentPageId),
+        isNull(pages.archivedAt)
+      )
+    )
+    .orderBy(asc(pages.sortOrder), asc(pages.createdAt))
+    .all();
+
+  return siblings.length === 0 ? 0 : siblings[siblings.length - 1].sortOrder + 1;
+}
+
+function getLockedError(page: { isLocked: boolean }) {
+  if (page.isLocked) {
+    return { error: "Page is locked" } as const;
+  }
+  return null;
 }
 
 function getRowsWithCells(pageId: string) {
@@ -87,6 +111,10 @@ export const databaseRoutes = new Hono<AuthEnv>()
           title: input.title ?? "Untitled Database",
           icon: null,
           coverImage: null,
+          sortOrder: getNextSortOrder(user.id, input.parentPageId ?? null),
+          fontFamily: "default",
+          contentWidth: "normal",
+          isLocked: false,
           isDatabase: true,
           createdBy: user.id,
           createdAt: now,
@@ -147,6 +175,8 @@ export const databaseRoutes = new Hono<AuthEnv>()
       if (!page) {
         return c.json({ error: "Database not found" }, 404);
       }
+      const lockError = getLockedError(page);
+      if (lockError) return c.json(lockError, 423);
 
       // Get max position
       const existing = db
@@ -188,6 +218,8 @@ export const databaseRoutes = new Hono<AuthEnv>()
       if (!page) {
         return c.json({ error: "Database not found" }, 404);
       }
+      const lockError = getLockedError(page);
+      if (lockError) return c.json(lockError, 423);
 
       const existing = db
         .select()
@@ -234,6 +266,8 @@ export const databaseRoutes = new Hono<AuthEnv>()
     if (!page) {
       return c.json({ error: "Database not found" }, 404);
     }
+    const lockError = getLockedError(page);
+    if (lockError) return c.json(lockError, 423);
 
     const existing = db
       .select({ id: databaseProperties.id })
@@ -270,6 +304,8 @@ export const databaseRoutes = new Hono<AuthEnv>()
       if (!page) {
         return c.json({ error: "Database not found" }, 404);
       }
+      const lockError = getLockedError(page);
+      if (lockError) return c.json(lockError, 423);
 
       db.transaction(() => {
         for (let i = 0; i < propertyIds.length; i++) {
@@ -302,6 +338,8 @@ export const databaseRoutes = new Hono<AuthEnv>()
       if (!page) {
         return c.json({ error: "Database not found" }, 404);
       }
+      const lockError = getLockedError(page);
+      if (lockError) return c.json(lockError, 423);
 
       const now = Date.now();
       const rowId = nanoid();
@@ -351,6 +389,8 @@ export const databaseRoutes = new Hono<AuthEnv>()
     if (!page) {
       return c.json({ error: "Database not found" }, 404);
     }
+    const lockError = getLockedError(page);
+    if (lockError) return c.json(lockError, 423);
 
     const existing = db
       .select({ id: databaseRows.id })
@@ -384,6 +424,8 @@ export const databaseRoutes = new Hono<AuthEnv>()
       if (!page) {
         return c.json({ error: "Database not found" }, 404);
       }
+      const lockError = getLockedError(page);
+      if (lockError) return c.json(lockError, 423);
 
       const row = db
         .select({ id: databaseRows.id })

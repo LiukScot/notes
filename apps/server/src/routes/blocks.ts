@@ -19,7 +19,7 @@ export const blockRoutes = new Hono<AuthEnv>()
     const pageId = c.req.param("pageId");
 
     const page = db
-      .select({ id: pages.id })
+      .select({ id: pages.id, isLocked: pages.isLocked })
       .from(pages)
       .where(and(eq(pages.id, pageId), eq(pages.createdBy, user.id)))
       .get();
@@ -44,13 +44,16 @@ export const blockRoutes = new Hono<AuthEnv>()
     const { content } = c.req.valid("json");
 
     const page = db
-      .select({ id: pages.id })
+      .select({ id: pages.id, isLocked: pages.isLocked })
       .from(pages)
       .where(and(eq(pages.id, pageId), eq(pages.createdBy, user.id)))
       .get();
 
     if (!page) {
       return c.json({ error: "Page not found" }, 404);
+    }
+    if (page.isLocked) {
+      return c.json({ error: "Page is locked" }, 423);
     }
 
     const now = Date.now();

@@ -17,6 +17,7 @@ interface DatabaseToolbarProps {
   properties: DatabaseProperty[];
   sort: SortConfig | null;
   filter: FilterConfig | null;
+  isLocked?: boolean;
   onSortChange: (sort: SortConfig | null) => void;
   onFilterChange: (filter: FilterConfig | null) => void;
   onAddProperty: (name: string, type: PropertyType) => void;
@@ -26,6 +27,7 @@ export function DatabaseToolbar({
   properties,
   sort,
   filter,
+  isLocked = false,
   onSortChange,
   onFilterChange,
   onAddProperty,
@@ -118,12 +120,14 @@ export function DatabaseToolbar({
       <div className="relative">
         <button
           onClick={() => {
+            if (isLocked) return;
             setShowAddCol(!showAddCol);
             setShowSort(false);
             setShowFilter(false);
           }}
-          className="hoverable flex items-center gap-1 rounded-md px-2 py-1 text-xs"
+          className="hoverable flex items-center gap-1 rounded-md px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-50"
           style={{ color: "var(--color-text-secondary)" }}
+          disabled={isLocked}
         >
           <Plus size={13} />
           Column

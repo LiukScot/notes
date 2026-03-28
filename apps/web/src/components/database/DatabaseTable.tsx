@@ -5,6 +5,7 @@ import { DatabaseColumnHeader } from "./DatabaseColumnHeader";
 import type { DatabaseProperty, DatabaseRowWithCells } from "@notes/shared";
 
 interface DatabaseTableProps {
+  isLocked?: boolean;
   properties: DatabaseProperty[];
   rows: DatabaseRowWithCells[];
   onCellChange: (rowId: string, propertyId: string, value: unknown) => void;
@@ -16,6 +17,7 @@ interface DatabaseTableProps {
 }
 
 export function DatabaseTable({
+  isLocked = false,
   properties,
   rows,
   onCellChange,
@@ -54,6 +56,7 @@ export function DatabaseTable({
   );
 
   const handleDragStart = (propertyId: string) => (e: React.DragEvent) => {
+    if (isLocked) return;
     dragPropertyRef.current = propertyId;
     e.dataTransfer.effectAllowed = "move";
   };
@@ -64,6 +67,7 @@ export function DatabaseTable({
   };
 
   const handleDrop = (targetPropertyId: string) => (e: React.DragEvent) => {
+    if (isLocked) return;
     e.preventDefault();
     const sourceId = dragPropertyRef.current;
     if (!sourceId || sourceId === targetPropertyId) return;
@@ -94,6 +98,7 @@ export function DatabaseTable({
           <DatabaseColumnHeader
             key={prop.id}
             property={prop}
+            isLocked={isLocked}
             onRename={(name) => onRenameProperty(prop.id, name)}
             onDelete={() => onDeleteProperty(prop.id)}
             onDragStart={handleDragStart(prop.id)}
@@ -120,9 +125,10 @@ export function DatabaseTable({
             >
               <span className="group-hover/row:hidden">{rowIdx + 1}</span>
               <button
-                className="hidden rounded p-0.5 hover:opacity-70 group-hover/row:block"
+                className="hidden rounded p-0.5 hover:opacity-70 group-hover/row:block disabled:cursor-not-allowed disabled:opacity-40"
                 style={{ color: "var(--color-danger)" }}
                 onClick={() => onDeleteRow(row.id)}
+                disabled={isLocked}
               >
                 ×
               </button>
@@ -136,6 +142,7 @@ export function DatabaseTable({
                 <DatabaseCell
                   property={prop}
                   value={row.cells[prop.id]}
+                  disabled={isLocked}
                   onChange={(value) => onCellChange(row.id, prop.id, value)}
                 />
               </div>
@@ -152,11 +159,12 @@ export function DatabaseTable({
       {/* Add row button */}
       <button
         onClick={onAddRow}
-        className="hoverable flex w-full items-center gap-1 border-b px-3 py-1.5 text-sm"
+        className="hoverable flex w-full items-center gap-1 border-b px-3 py-1.5 text-sm disabled:cursor-not-allowed disabled:opacity-50"
         style={{
           borderColor: "var(--color-border)",
           color: "var(--color-text-secondary)",
         }}
+        disabled={isLocked}
       >
         <Plus size={14} />
         New row

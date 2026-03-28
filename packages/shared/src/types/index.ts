@@ -19,6 +19,10 @@ export interface Page {
   title: string;
   icon: string | null;
   coverImage: string | null;
+  sortOrder: number;
+  fontFamily: "default" | "serif" | "mono";
+  contentWidth: "normal" | "wide";
+  isLocked: boolean;
   isDatabase: boolean;
   createdBy: string;
   createdAt: number;
@@ -79,6 +83,8 @@ export interface PageTreeItem {
   id: string;
   title: string;
   icon: string | null;
+  sortOrder: number;
+  isLocked: boolean;
   isDatabase: boolean;
   parentPageId: string | null;
   children: PageTreeItem[];

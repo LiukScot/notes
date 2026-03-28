@@ -19,9 +19,10 @@ function getTheme() {
 interface EditorProps {
   pageId: string;
   initialContent: any[] | null;
+  editable?: boolean;
 }
 
-export function Editor({ pageId, initialContent }: EditorProps) {
+export function Editor({ pageId, initialContent, editable = true }: EditorProps) {
   const theme = useSyncExternalStore(subscribeTheme, getTheme);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pageIdRef = useRef(pageId);
@@ -34,21 +35,23 @@ export function Editor({ pageId, initialContent }: EditorProps) {
   });
 
   const saveContent = useCallback(async () => {
+    if (!editable) return;
     const doc = editor.document as Block[];
     try {
       await api.blocks.save(pageIdRef.current, doc);
     } catch (e) {
       console.error("Failed to save:", e);
     }
-  }, [editor]);
+  }, [editable, editor]);
 
   // Debounced auto-save on changes
   const handleChange = useCallback(() => {
+    if (!editable) return;
     if (saveTimerRef.current) {
       clearTimeout(saveTimerRef.current);
     }
     saveTimerRef.current = setTimeout(saveContent, 1000);
-  }, [saveContent]);
+  }, [editable, saveContent]);
 
   // Save on unmount
   useEffect(() => {
@@ -65,6 +68,7 @@ export function Editor({ pageId, initialContent }: EditorProps) {
       editor={editor}
       onChange={handleChange}
       theme={theme}
+      editable={editable}
     />
   );
 }

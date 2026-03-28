@@ -21,11 +21,12 @@ async function request<T>(
   path: string,
   options?: RequestInit
 ): Promise<T> {
+  const isFormData = options?.body instanceof FormData;
   const res = await fetch(`${BASE}${path}`, {
     credentials: "include",
     headers: {
-      "Content-Type": "application/json",
-      ...options?.headers,
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
+      ...(options?.headers || {}),
     },
     ...options,
   });
@@ -78,6 +79,21 @@ export const api = {
         method: "PATCH",
         body: JSON.stringify(data),
       }),
+    reorder: (data: { parentPageId: string | null; orderedPageIds: string[] }) =>
+      request<{ ok: boolean }>("/pages/reorder", {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }),
+    uploadCover: (id: string, file: File) => {
+      const body = new FormData();
+      body.append("file", file);
+      return request<{ coverImage: string }>(`/pages/${id}/cover-upload`, {
+        method: "POST",
+        body,
+      });
+    },
+    removeCover: (id: string) =>
+      request<{ ok: boolean }>(`/pages/${id}/cover`, { method: "DELETE" }),
     delete: (id: string) =>
       request<{ ok: boolean }>(`/pages/${id}`, { method: "DELETE" }),
   },

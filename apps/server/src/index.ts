@@ -10,6 +10,7 @@ import { existsSync } from "fs";
 import { resolve } from "path";
 
 const app = new Hono();
+const uploadDir = resolve(import.meta.dir, "../data/uploads");
 
 app.use(logger());
 const allowedOrigins = process.env.ALLOWED_ORIGINS
@@ -24,6 +25,14 @@ app.use(
       return null;
     },
     credentials: true,
+  })
+);
+
+app.use(
+  "/uploads/*",
+  serveStatic({
+    root: uploadDir,
+    rewriteRequestPath: (path) => path.replace(/^\/uploads/, ""),
   })
 );
 
