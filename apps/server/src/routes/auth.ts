@@ -24,7 +24,7 @@ function createSession(c: Context, userId: string) {
   setCookie(c, "session", token, {
     httpOnly: true,
     secure: true,
-    sameSite: "none",
+    sameSite: "lax",
     path: "/",
     maxAge: SESSION_DURATION / 1000,
   });

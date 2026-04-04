@@ -13,6 +13,11 @@ const app = new Hono();
 const uploadDir = resolve(import.meta.dir, "../data/uploads");
 
 app.use(logger());
+app.use(async (c, next) => {
+  await next();
+  c.header("X-Content-Type-Options", "nosniff");
+  c.header("X-Frame-Options", "DENY");
+});
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
   : [];

@@ -136,7 +136,10 @@ export const databaseRoutes = new Hono<AuthEnv>()
         .run();
     });
 
-    const page = db.select().from(pages).where(eq(pages.id, pageId)).get()!;
+    const page = db.select().from(pages).where(eq(pages.id, pageId)).get();
+    if (!page) {
+      return c.json({ error: "Failed to create database" }, 500);
+    }
     return c.json({ page }, 201);
   })
 
@@ -250,7 +253,11 @@ export const databaseRoutes = new Hono<AuthEnv>()
         .select()
         .from(databaseProperties)
         .where(eq(databaseProperties.id, propertyId))
-        .get()!;
+        .get();
+
+      if (!property) {
+        return c.json({ error: "Property not found after update" }, 500);
+      }
 
       return c.json({ property });
     }
