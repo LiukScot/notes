@@ -227,7 +227,8 @@ export const pageRoutes = new Hono<AuthEnv>()
 
     if (page.coverImage?.startsWith(`/uploads/covers/${user.id}/`)) {
       const previousPath = resolve(uploadRoot, page.coverImage.replace("/uploads/", ""));
-      if (existsSync(previousPath)) {
+      const safeBase = resolve(uploadRoot, "covers", user.id);
+      if (previousPath.startsWith(safeBase + "/") && existsSync(previousPath)) {
         unlinkSync(previousPath);
       }
     }
@@ -256,7 +257,8 @@ export const pageRoutes = new Hono<AuthEnv>()
 
     if (page.coverImage?.startsWith(`/uploads/covers/${user.id}/`)) {
       const filePath = resolve(uploadRoot, page.coverImage.replace("/uploads/", ""));
-      if (existsSync(filePath)) {
+      const safeBase = resolve(uploadRoot, "covers", user.id);
+      if (filePath.startsWith(safeBase + "/") && existsSync(filePath)) {
         unlinkSync(filePath);
       }
     }
