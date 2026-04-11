@@ -216,6 +216,10 @@ export const pageRoutes = new Hono<AuthEnv>()
     if (!file.type.startsWith("image/")) {
       return c.json({ error: "Only image uploads are supported" }, 400);
     }
+    const MAX_UPLOAD_SIZE = 5 * 1024 * 1024; // 5MB
+    if (file.size > MAX_UPLOAD_SIZE) {
+      return c.json({ error: "File too large (max 5MB)" }, 413);
+    }
 
     const userDir = resolve(uploadRoot, "covers", user.id);
     mkdirSync(userDir, { recursive: true });
@@ -286,10 +290,27 @@ export const pageRoutes = new Hono<AuthEnv>()
     }
 
     const now = Date.now();
-    db.update(pages)
-      .set({ archivedAt: now, updatedAt: now })
-      .where(eq(pages.id, id))
-      .run();
+    db.transaction(() => {
+      // Archive the page and all its descendants recursively
+      const archiveRecursive = (pageId: string) => {
+        db.update(pages)
+          .set({ archivedAt: now, updatedAt: now })
+          .where(and(eq(pages.id, pageId), eq(pages.createdBy, user.id), isNull(pages.archivedAt)))
+          .run();
+
+        const children = db
+          .select({ id: pages.id })
+          .from(pages)
+          .where(and(eq(pages.parentPageId, pageId), eq(pages.createdBy, user.id), isNull(pages.archivedAt)))
+          .all();
+
+        for (const child of children) {
+          archiveRecursive(child.id);
+        }
+      };
+
+      archiveRecursive(id);
+    });
 
     return c.json({ ok: true });
   });
