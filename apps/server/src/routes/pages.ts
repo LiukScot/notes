@@ -295,7 +295,7 @@ export const pageRoutes = new Hono<AuthEnv>()
       const archiveRecursive = (pageId: string) => {
         db.update(pages)
           .set({ archivedAt: now, updatedAt: now })
-          .where(eq(pages.id, pageId))
+          .where(and(eq(pages.id, pageId), eq(pages.createdBy, user.id), isNull(pages.archivedAt)))
           .run();
 
         const children = db
