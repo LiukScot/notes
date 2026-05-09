@@ -13,7 +13,7 @@
   "dependencies": {
     "@hono/zod-validator": "^0.7.6",
     "@notes/shared": "workspace:*",
-    "drizzle-orm": "^0.39",
+    "drizzle-orm": "^0.45",
     "hono": "^4",
     "nanoid": "^5",
     "zod": "^3.24"
