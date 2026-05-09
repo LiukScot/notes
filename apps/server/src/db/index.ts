@@ -61,7 +61,7 @@ if (tableExists("sessions")) {
   `);
 
   // Cleanup expired sessions on startup
-  sqlite.exec(`DELETE FROM sessions WHERE expires_at < ${Date.now()}`);
+  sqlite.prepare("DELETE FROM sessions WHERE expires_at < ?").run(Date.now());
 }
 
 if (tableExists("links")) {
