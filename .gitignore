@@ -6,3 +6,5 @@ dist/
 *.db-shm
 .env
 .env.local
+.env.*.local
+apps/server/data/

@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { Fragment, useState, useCallback, useRef } from "react";
 import { Plus } from "lucide-react";
 import { DatabaseCell } from "./DatabaseCell";
 import { DatabaseColumnHeader } from "./DatabaseColumnHeader";
@@ -114,9 +114,8 @@ export function DatabaseTable({
 
         {/* Data rows */}
         {rows.map((row, rowIdx) => (
-          <>
+          <Fragment key={row.id}>
             <div
-              key={`n-${row.id}`}
               className="group/row flex items-center border-b border-r px-2 py-0 text-xs"
               style={{
                 borderColor: "var(--color-border)",
@@ -148,11 +147,10 @@ export function DatabaseTable({
               </div>
             ))}
             <div
-              key={`e-${row.id}`}
               className="border-b"
               style={{ borderColor: "var(--color-border)" }}
             />
-          </>
+          </Fragment>
         ))}
       </div>
 

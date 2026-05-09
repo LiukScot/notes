@@ -4,14 +4,14 @@ export const pageFontFamilySchema = z.enum(["default", "serif", "mono"]);
 export const pageContentWidthSchema = z.enum(["normal", "wide"]);
 
 export const signupSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
+  email: z.string().email().max(254),
+  password: z.string().min(8).max(1024),
   name: z.string().min(1).max(100),
 });
 
 export const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1),
+  email: z.string().email().max(254),
+  password: z.string().min(1).max(1024),
 });
 
 export const createPageSchema = z.object({
