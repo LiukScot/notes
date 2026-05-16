@@ -65,13 +65,13 @@ export const createDatabaseSchema = z.object({
 export const createPropertySchema = z.object({
   name: z.string().min(1),
   type: propertyTypeSchema,
-  config: z.record(z.unknown()).optional(),
+  config: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const updatePropertySchema = z.object({
   name: z.string().min(1).optional(),
   type: propertyTypeSchema.optional(),
-  config: z.record(z.unknown()).nullable().optional(),
+  config: z.record(z.string(), z.unknown()).nullable().optional(),
 });
 
 export const reorderPropertiesSchema = z.object({
@@ -79,7 +79,7 @@ export const reorderPropertiesSchema = z.object({
 });
 
 export const createRowSchema = z.object({
-  cells: z.record(z.unknown()).optional(),
+  cells: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const updateCellSchema = z.object({
