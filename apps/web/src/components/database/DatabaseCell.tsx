@@ -221,7 +221,7 @@ const SELECT_COLORS = [
   "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200",
 ];
 
-function getColorForOption(option: string, index: number) {
+function getColorForOption(_option: string, index: number) {
   return SELECT_COLORS[index % SELECT_COLORS.length];
 }
 
@@ -346,7 +346,7 @@ function MultiSelectCell({
         className={`flex h-full w-full flex-wrap items-center gap-1 px-2 py-1 ${disabled ? "" : "cursor-pointer"}`}
         onClick={() => !disabled && setOpen(!open)}
       >
-        {selected.map((s, i) => (
+        {selected.map((s) => (
           <span
             key={s}
             className={`inline-block rounded-sm px-1.5 py-0.5 text-xs font-medium ${getColorForOption(s, options.indexOf(s))}`}

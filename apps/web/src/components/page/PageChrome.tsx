@@ -122,7 +122,7 @@ export function PageChrome({
           }}
         >
           {page.coverImage ? (
-            <img src={page.coverImage} alt="" className="h-full w-full object-cover" />
+            <img src={page.coverImage} alt="" loading="lazy" className="h-full w-full object-cover" />
           ) : (
             <Dialog.Trigger asChild disabled={page.isLocked}>
               <button
@@ -178,11 +178,14 @@ export function PageChrome({
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium" style={{ color: "var(--color-text)" }}>
+                <label htmlFor="cover-url" className="text-sm font-medium" style={{ color: "var(--color-text)" }}>
                   Image URL
                 </label>
                 <input
+                  id="cover-url"
+                  name="coverUrl"
                   type="url"
+                  autoComplete="off"
                   value={coverUrl}
                   onChange={(event) => setCoverUrl(event.target.value)}
                   placeholder="https://example.com/cover.jpg"
@@ -202,10 +205,12 @@ export function PageChrome({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium" style={{ color: "var(--color-text)" }}>
+                <label htmlFor="cover-file" className="text-sm font-medium" style={{ color: "var(--color-text)" }}>
                   Upload image
                 </label>
                 <input
+                  id="cover-file"
+                  name="coverFile"
                   type="file"
                   accept="image/*"
                   disabled={page.isLocked || coverBusy}

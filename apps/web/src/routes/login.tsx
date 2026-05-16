@@ -52,12 +52,15 @@ function LoginPage() {
           )}
 
           <div>
-            <label className="block text-sm font-medium mb-1"
+            <label htmlFor="login-email" className="block text-sm font-medium mb-1"
               style={{ color: "var(--color-text-secondary)" }}>
               Email
             </label>
             <input
+              id="login-email"
+              name="email"
               type="email"
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -71,12 +74,15 @@ function LoginPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1"
+            <label htmlFor="login-password" className="block text-sm font-medium mb-1"
               style={{ color: "var(--color-text-secondary)" }}>
               Password
             </label>
             <input
+              id="login-password"
+              name="password"
               type="password"
+              autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
