@@ -1,16 +1,31 @@
 import { Database } from "bun:sqlite";
 import { drizzle } from "drizzle-orm/bun-sqlite";
+import { migrate } from "drizzle-orm/bun-sqlite/migrator";
 import * as schema from "./schema.js";
 import { mkdirSync } from "fs";
+import { resolve, dirname } from "path";
 
-mkdirSync("./data", { recursive: true });
+const dbPath = process.env.DB_PATH ?? "./data/notes.db";
+const inMemory = dbPath === ":memory:";
 
-const sqlite = new Database("./data/notes.db");
-sqlite.exec("PRAGMA journal_mode = WAL;");
+if (!inMemory) {
+  mkdirSync(dirname(dbPath), { recursive: true });
+}
+
+const sqlite = new Database(dbPath);
+if (!inMemory) {
+  sqlite.exec("PRAGMA journal_mode = WAL;");
+}
 sqlite.exec("PRAGMA foreign_keys = ON;");
 sqlite.exec("PRAGMA synchronous = NORMAL;");
 sqlite.exec("PRAGMA busy_timeout = 5000;");
 sqlite.exec("PRAGMA cache_size = -64000;");
+
+if (process.env.RUN_MIGRATIONS === "1") {
+  migrate(drizzle(sqlite, { schema }), {
+    migrationsFolder: resolve(import.meta.dir, "./migrations"),
+  });
+}
 
 function tableExists(name: string): boolean {
   const result = sqlite
@@ -46,7 +61,6 @@ if (tableExists("database_cell_values")) {
   sqlite.exec(`
     CREATE INDEX IF NOT EXISTS idx_database_cell_values_row_id ON database_cell_values(row_id);
     CREATE INDEX IF NOT EXISTS idx_database_cell_values_property_id ON database_cell_values(property_id);
-    CREATE UNIQUE INDEX IF NOT EXISTS idx_database_cell_values_row_property ON database_cell_values(row_id, property_id);
   `);
 }
 
@@ -72,3 +86,5 @@ if (tableExists("links")) {
   `);
 }
 export const db = drizzle(sqlite, { schema });
+export { sqlite };
+export type DB = typeof db;

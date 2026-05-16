@@ -20,10 +20,22 @@ export const createPageSchema = z.object({
   icon: z.string().nullable().optional(),
 });
 
+const coverImageSchema = z
+  .string()
+  .max(2048)
+  .refine(
+    (value) =>
+      value.startsWith("https://") || value.startsWith("/uploads/"),
+    {
+      message:
+        "coverImage must be an https:// URL or an internal /uploads/ path",
+    }
+  );
+
 export const updatePageSchema = z.object({
   title: z.string().optional(),
   icon: z.string().nullable().optional(),
-  coverImage: z.string().url().max(2048).regex(/^https:\/\//i, "Cover must be an https:// URL").nullable().optional(),
+  coverImage: coverImageSchema.nullable().optional(),
   parentPageId: z.string().nullable().optional(),
   fontFamily: pageFontFamilySchema.optional(),
   contentWidth: pageContentWidthSchema.optional(),
