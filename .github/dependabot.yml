@@ -5,33 +5,63 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
+    groups:
+      actions-minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
+    groups:
+      root-minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "npm"
     directory: "/packages/shared"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
+    groups:
+      shared-minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "npm"
     directory: "/apps/server"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
+    groups:
+      server-minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "npm"
     directory: "/apps/web"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
+    groups:
+      web-minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
+    groups:
+      docker-minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
