@@ -3,7 +3,7 @@ import { zValidator } from "@hono/zod-validator";
 import { nanoid } from "nanoid";
 import { db } from "../db/index.js";
 import { pages } from "../db/schema.js";
-import { eq, isNull, and, asc } from "drizzle-orm";
+import { eq, isNull, and, desc } from "drizzle-orm";
 import {
   createPageSchema,
   updatePageSchema,
@@ -14,6 +14,8 @@ import { mkdirSync, existsSync, unlinkSync } from "fs";
 import { resolve, extname } from "path";
 
 const uploadRoot = resolve(import.meta.dir, "../../data/uploads");
+const MAX_UPLOAD_SIZE = 5 * 1024 * 1024; // 5MB
+const ALLOWED_COVER_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".gif", ".webp", ".avif"]);
 
 function getOwnedPage(userId: string, pageId: string) {
   return db
@@ -24,7 +26,7 @@ function getOwnedPage(userId: string, pageId: string) {
 }
 
 function getNextSortOrder(userId: string, parentPageId: string | null) {
-  const siblings = db
+  const last = db
     .select({ sortOrder: pages.sortOrder })
     .from(pages)
     .where(
@@ -34,10 +36,11 @@ function getNextSortOrder(userId: string, parentPageId: string | null) {
         isNull(pages.archivedAt)
       )
     )
-    .orderBy(asc(pages.sortOrder), asc(pages.createdAt))
-    .all();
+    .orderBy(desc(pages.sortOrder))
+    .limit(1)
+    .get();
 
-  return siblings.length === 0 ? 0 : siblings[siblings.length - 1].sortOrder + 1;
+  return last ? last.sortOrder + 1 : 0;
 }
 
 function isUnlockOnlyUpdate(input: Record<string, unknown>) {
@@ -141,6 +144,10 @@ export const pageRoutes = new Hono<AuthEnv>()
       return c.json({ error: "Ordered pages must match the sibling set" }, 400);
     }
 
+    if (new Set(orderedPageIds).size !== orderedPageIds.length) {
+      return c.json({ error: "Ordered pages must not contain duplicates" }, 400);
+    }
+
     const siblingIds = new Set(siblingPages.map((page) => page.id));
     if (orderedPageIds.some((id) => !siblingIds.has(id))) {
       return c.json({ error: "Ordered pages must all belong to the same sibling set" }, 400);
@@ -216,7 +223,6 @@ export const pageRoutes = new Hono<AuthEnv>()
     if (!file.type.startsWith("image/")) {
       return c.json({ error: "Only image uploads are supported" }, 400);
     }
-    const MAX_UPLOAD_SIZE = 5 * 1024 * 1024; // 5MB
     if (file.size > MAX_UPLOAD_SIZE) {
       return c.json({ error: "File too large (max 5MB)" }, 413);
     }
@@ -224,8 +230,11 @@ export const pageRoutes = new Hono<AuthEnv>()
     const userDir = resolve(uploadRoot, "covers", user.id);
     mkdirSync(userDir, { recursive: true });
 
-    const suffix = extname(file.name || "").replace(/[^a-zA-Z0-9.]/g, "") || ".bin";
-    const filename = `${Date.now()}-${nanoid()}${suffix}`;
+    const rawExt = extname(file.name || "").toLowerCase().replace(/[^a-z0-9.]/g, "");
+    if (!ALLOWED_COVER_EXTENSIONS.has(rawExt)) {
+      return c.json({ error: "Unsupported image format" }, 400);
+    }
+    const filename = `${Date.now()}-${nanoid()}${rawExt}`;
     const filePath = resolve(userDir, filename);
     await Bun.write(filePath, file);
 

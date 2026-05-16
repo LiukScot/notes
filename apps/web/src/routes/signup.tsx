@@ -53,12 +53,15 @@ function SignupPage() {
           )}
 
           <div>
-            <label className="block text-sm font-medium mb-1"
+            <label htmlFor="signup-name" className="block text-sm font-medium mb-1"
               style={{ color: "var(--color-text-secondary)" }}>
               Name
             </label>
             <input
+              id="signup-name"
+              name="name"
               type="text"
+              autoComplete="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
@@ -72,12 +75,15 @@ function SignupPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1"
+            <label htmlFor="signup-email" className="block text-sm font-medium mb-1"
               style={{ color: "var(--color-text-secondary)" }}>
               Email
             </label>
             <input
+              id="signup-email"
+              name="email"
               type="email"
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -91,12 +97,15 @@ function SignupPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1"
+            <label htmlFor="signup-password" className="block text-sm font-medium mb-1"
               style={{ color: "var(--color-text-secondary)" }}>
               Password
             </label>
             <input
+              id="signup-password"
+              name="password"
               type="password"
+              autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required

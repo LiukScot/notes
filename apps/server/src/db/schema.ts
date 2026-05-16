@@ -1,4 +1,5 @@
 import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
+import type { AnySQLiteColumn } from "drizzle-orm/sqlite-core";
 
 export const users = sqliteTable("users", {
   id: text("id").primaryKey(),
@@ -20,7 +21,7 @@ export const sessions = sqliteTable("sessions", {
 
 export const pages = sqliteTable("pages", {
   id: text("id").primaryKey(),
-  parentPageId: text("parent_page_id").references((): any => pages.id, {
+  parentPageId: text("parent_page_id").references((): AnySQLiteColumn => pages.id, {
     onDelete: "set null",
   }),
   title: text("title").notNull().default("Untitled"),

@@ -6,13 +6,6 @@ export interface User {
   createdAt: number;
 }
 
-export interface Session {
-  id: string;
-  userId: string;
-  token: string;
-  expiresAt: number;
-}
-
 export interface Page {
   id: string;
   parentPageId: string | null;
@@ -68,15 +61,6 @@ export interface DatabaseCellValue {
 
 export interface DatabaseRowWithCells extends DatabaseRow {
   cells: Record<string, unknown>;
-}
-
-export interface Link {
-  id: string;
-  sourcePageId: string;
-  sourceBlockId: string | null;
-  targetPageId: string;
-  type: "mention" | "link" | "relation";
-  createdAt: number;
 }
 
 export interface PageTreeItem {

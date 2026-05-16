@@ -46,6 +46,7 @@ if (tableExists("database_cell_values")) {
   sqlite.exec(`
     CREATE INDEX IF NOT EXISTS idx_database_cell_values_row_id ON database_cell_values(row_id);
     CREATE INDEX IF NOT EXISTS idx_database_cell_values_property_id ON database_cell_values(property_id);
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_database_cell_values_row_property ON database_cell_values(row_id, property_id);
   `);
 }
 
@@ -71,4 +72,3 @@ if (tableExists("links")) {
   `);
 }
 export const db = drizzle(sqlite, { schema });
-export type DB = typeof db;
