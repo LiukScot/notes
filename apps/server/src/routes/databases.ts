@@ -8,7 +8,7 @@ import {
   databaseRows,
   databaseCellValues,
 } from "../db/schema.js";
-import { eq, and, isNull, desc } from "drizzle-orm";
+import { eq, and, isNull, asc } from "drizzle-orm";
 import {
   createDatabaseSchema,
   createPropertySchema,
@@ -34,7 +34,7 @@ function getOwnedDatabasePage(userId: string, pageId: string) {
 }
 
 function getNextSortOrder(userId: string, parentPageId: string | null) {
-  const last = db
+  const siblings = db
     .select({ sortOrder: pages.sortOrder })
     .from(pages)
     .where(
@@ -44,11 +44,10 @@ function getNextSortOrder(userId: string, parentPageId: string | null) {
         isNull(pages.archivedAt)
       )
     )
-    .orderBy(desc(pages.sortOrder))
-    .limit(1)
-    .get();
+    .orderBy(asc(pages.sortOrder), asc(pages.createdAt))
+    .all();
 
-  return last ? last.sortOrder + 1 : 0;
+  return siblings.length === 0 ? 0 : siblings[siblings.length - 1].sortOrder + 1;
 }
 
 function getLockedError(page: { isLocked: boolean }) {
@@ -315,19 +314,33 @@ export const databaseRoutes = new Hono<AuthEnv>()
       const lockError = getLockedError(page);
       if (lockError) return c.json(lockError, 423);
 
-      const existingProperties = db
+      const existing = db
         .select({ id: databaseProperties.id })
         .from(databaseProperties)
         .where(eq(databaseProperties.pageId, pageId))
         .all();
 
-      const existingIds = new Set(existingProperties.map((p) => p.id));
-      if (
-        propertyIds.length !== existingIds.size ||
-        new Set(propertyIds).size !== propertyIds.length ||
-        propertyIds.some((id) => !existingIds.has(id))
-      ) {
-        return c.json({ error: "Property IDs must be a permutation of the existing properties" }, 400);
+      if (existing.length !== propertyIds.length) {
+        return c.json(
+          { error: "propertyIds must be a full permutation of existing properties" },
+          400
+        );
+      }
+      const unique = new Set(propertyIds);
+      if (unique.size !== propertyIds.length) {
+        return c.json(
+          { error: "propertyIds must not contain duplicates" },
+          400
+        );
+      }
+      const existingIds = new Set(existing.map((p) => p.id));
+      for (const id of propertyIds) {
+        if (!existingIds.has(id)) {
+          return c.json(
+            { error: "propertyIds must reference this database's properties only" },
+            400
+          );
+        }
       }
 
       db.transaction(() => {
@@ -366,20 +379,6 @@ export const databaseRoutes = new Hono<AuthEnv>()
 
       const now = Date.now();
       const rowId = nanoid();
-
-      if (input.cells && Object.keys(input.cells).length > 0) {
-        const validProperties = db
-          .select({ id: databaseProperties.id })
-          .from(databaseProperties)
-          .where(eq(databaseProperties.pageId, pageId))
-          .all();
-        const validPropertyIds = new Set(validProperties.map((p) => p.id));
-        for (const propertyId of Object.keys(input.cells)) {
-          if (!validPropertyIds.has(propertyId)) {
-            return c.json({ error: "Invalid property ID" }, 400);
-          }
-        }
-      }
 
       db.transaction(() => {
         db.insert(databaseRows)

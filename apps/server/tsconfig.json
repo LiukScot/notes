@@ -8,6 +8,9 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "types": ["bun"],
     "paths": {
       "@/*": ["./src/*"]
     }

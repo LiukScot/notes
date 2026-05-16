@@ -53,8 +53,11 @@ function SignupPage() {
           )}
 
           <div>
-            <label htmlFor="signup-name" className="block text-sm font-medium mb-1"
-              style={{ color: "var(--color-text-secondary)" }}>
+            <label
+              htmlFor="signup-name"
+              className="block text-sm font-medium mb-1"
+              style={{ color: "var(--color-text-secondary)" }}
+            >
               Name
             </label>
             <input
@@ -75,8 +78,11 @@ function SignupPage() {
           </div>
 
           <div>
-            <label htmlFor="signup-email" className="block text-sm font-medium mb-1"
-              style={{ color: "var(--color-text-secondary)" }}>
+            <label
+              htmlFor="signup-email"
+              className="block text-sm font-medium mb-1"
+              style={{ color: "var(--color-text-secondary)" }}
+            >
               Email
             </label>
             <input
@@ -97,8 +103,11 @@ function SignupPage() {
           </div>
 
           <div>
-            <label htmlFor="signup-password" className="block text-sm font-medium mb-1"
-              style={{ color: "var(--color-text-secondary)" }}>
+            <label
+              htmlFor="signup-password"
+              className="block text-sm font-medium mb-1"
+              style={{ color: "var(--color-text-secondary)" }}
+            >
               Password
             </label>
             <input

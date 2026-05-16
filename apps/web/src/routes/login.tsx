@@ -52,8 +52,11 @@ function LoginPage() {
           )}
 
           <div>
-            <label htmlFor="login-email" className="block text-sm font-medium mb-1"
-              style={{ color: "var(--color-text-secondary)" }}>
+            <label
+              htmlFor="login-email"
+              className="block text-sm font-medium mb-1"
+              style={{ color: "var(--color-text-secondary)" }}
+            >
               Email
             </label>
             <input
@@ -74,8 +77,11 @@ function LoginPage() {
           </div>
 
           <div>
-            <label htmlFor="login-password" className="block text-sm font-medium mb-1"
-              style={{ color: "var(--color-text-secondary)" }}>
+            <label
+              htmlFor="login-password"
+              className="block text-sm font-medium mb-1"
+              style={{ color: "var(--color-text-secondary)" }}
+            >
               Password
             </label>
             <input

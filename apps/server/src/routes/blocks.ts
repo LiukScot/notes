@@ -7,7 +7,6 @@ import { eq, and } from "drizzle-orm";
 import { authMiddleware, type AuthEnv } from "../middleware/auth.js";
 
 const saveBlocksSchema = z.object({
-  // reason: BlockNote block shape is opaque at this boundary; cap size to prevent DoS
   content: z.array(z.any()).max(5000),
 });
 
