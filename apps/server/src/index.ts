@@ -55,7 +55,6 @@ if (existsSync(staticDir)) {
     "/*",
     serveStatic({
       root: staticDir,
-      rewriteRequestPath: (path) => path,
     })
   );
   // SPA fallback: serve index.html for non-API, non-file routes

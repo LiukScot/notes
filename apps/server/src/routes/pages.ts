@@ -3,14 +3,14 @@ import { zValidator } from "@hono/zod-validator";
 import { nanoid } from "nanoid";
 import { db } from "../db/index.js";
 import { pages } from "../db/schema.js";
-import { eq, isNull, and, asc } from "drizzle-orm";
+import { eq, isNull, and, asc, max } from "drizzle-orm";
 import {
   createPageSchema,
   updatePageSchema,
   reorderPagesSchema,
 } from "@notes/shared";
 import { authMiddleware, type AuthEnv } from "../middleware/auth.js";
-import { mkdirSync, existsSync, unlinkSync } from "fs";
+import { mkdirSync, unlinkSync } from "fs";
 import { resolve, extname } from "path";
 
 const uploadRoot = resolve(import.meta.dir, "../../data/uploads");
@@ -34,8 +34,8 @@ function getOwnedPage(userId: string, pageId: string) {
 }
 
 function getNextSortOrder(userId: string, parentPageId: string | null) {
-  const siblings = db
-    .select({ sortOrder: pages.sortOrder })
+  const result = db
+    .select({ maxOrder: max(pages.sortOrder) })
     .from(pages)
     .where(
       and(
@@ -44,10 +44,8 @@ function getNextSortOrder(userId: string, parentPageId: string | null) {
         isNull(pages.archivedAt)
       )
     )
-    .orderBy(asc(pages.sortOrder), asc(pages.createdAt))
-    .all();
-
-  return siblings.length === 0 ? 0 : siblings[siblings.length - 1].sortOrder + 1;
+    .get();
+  return result?.maxOrder == null ? 0 : result.maxOrder + 1;
 }
 
 function isUnlockOnlyUpdate(input: Record<string, unknown>) {
@@ -198,6 +196,15 @@ export const pageRoutes = new Hono<AuthEnv>()
       input.parentPageId !== undefined &&
       input.parentPageId !== existing.parentPageId
     ) {
+      if (input.parentPageId === id) {
+        return c.json({ error: "A page cannot be its own parent" }, 400);
+      }
+      if (input.parentPageId !== null) {
+        const targetParent = getOwnedPage(user.id, input.parentPageId);
+        if (!targetParent) {
+          return c.json({ error: "Parent page not found" }, 404);
+        }
+      }
       updates.sortOrder = getNextSortOrder(user.id, input.parentPageId ?? null);
     }
 
@@ -232,7 +239,7 @@ export const pageRoutes = new Hono<AuthEnv>()
       return c.json({ error: "Only image uploads are supported" }, 400);
     }
     if (file.size > MAX_UPLOAD_SIZE) {
-      return c.json({ error: "File too large (max 5MB)" }, 413);
+      return c.json({ error: `File too large (max ${MAX_UPLOAD_SIZE / (1024 * 1024)}MB)` }, 413);
     }
     const suffix = extname(file.name || "").toLowerCase();
     if (!ALLOWED_COVER_EXTENSIONS.has(suffix)) {
@@ -252,8 +259,12 @@ export const pageRoutes = new Hono<AuthEnv>()
     if (page.coverImage?.startsWith(`/uploads/covers/${user.id}/`)) {
       const previousPath = resolve(uploadRoot, page.coverImage.replace("/uploads/", ""));
       const safeBase = resolve(uploadRoot, "covers", user.id);
-      if (previousPath.startsWith(safeBase + "/") && existsSync(previousPath)) {
-        unlinkSync(previousPath);
+      if (previousPath.startsWith(safeBase + "/")) {
+        try {
+          unlinkSync(previousPath);
+        } catch (e: unknown) {
+          if ((e as { code?: string }).code !== "ENOENT") throw e;
+        }
       }
     }
 
@@ -282,8 +293,12 @@ export const pageRoutes = new Hono<AuthEnv>()
     if (page.coverImage?.startsWith(`/uploads/covers/${user.id}/`)) {
       const filePath = resolve(uploadRoot, page.coverImage.replace("/uploads/", ""));
       const safeBase = resolve(uploadRoot, "covers", user.id);
-      if (filePath.startsWith(safeBase + "/") && existsSync(filePath)) {
-        unlinkSync(filePath);
+      if (filePath.startsWith(safeBase + "/")) {
+        try {
+          unlinkSync(filePath);
+        } catch (e: unknown) {
+          if ((e as { code?: string }).code !== "ENOENT") throw e;
+        }
       }
     }
 

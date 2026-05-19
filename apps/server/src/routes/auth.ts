@@ -10,9 +10,10 @@ import { signupSchema, loginSchema } from "@notes/shared";
 import { authMiddleware } from "../middleware/auth.js";
 
 const SESSION_DURATION = 30 * 24 * 60 * 60 * 1000; // 30 days
+const SESSION_TOKEN_LENGTH = 32;
 
 function createSession(c: Context, userId: string) {
-  const token = nanoid(32);
+  const token = nanoid(SESSION_TOKEN_LENGTH);
   db.insert(sessions)
     .values({
       id: nanoid(),
