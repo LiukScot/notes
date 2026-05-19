@@ -8,7 +8,7 @@ import {
   databaseRows,
   databaseCellValues,
 } from "../db/schema.js";
-import { eq, and, isNull, asc } from "drizzle-orm";
+import { eq, and, isNull, asc, max } from "drizzle-orm";
 import {
   createDatabaseSchema,
   createPropertySchema,
@@ -34,8 +34,8 @@ function getOwnedDatabasePage(userId: string, pageId: string) {
 }
 
 function getNextSortOrder(userId: string, parentPageId: string | null) {
-  const siblings = db
-    .select({ sortOrder: pages.sortOrder })
+  const result = db
+    .select({ maxOrder: max(pages.sortOrder) })
     .from(pages)
     .where(
       and(
@@ -44,10 +44,8 @@ function getNextSortOrder(userId: string, parentPageId: string | null) {
         isNull(pages.archivedAt)
       )
     )
-    .orderBy(asc(pages.sortOrder), asc(pages.createdAt))
-    .all();
-
-  return siblings.length === 0 ? 0 : siblings[siblings.length - 1].sortOrder + 1;
+    .get();
+  return result?.maxOrder == null ? 0 : result.maxOrder + 1;
 }
 
 function getLockedError(page: { isLocked: boolean }) {
@@ -379,6 +377,19 @@ export const databaseRoutes = new Hono<AuthEnv>()
 
       const now = Date.now();
       const rowId = nanoid();
+
+      if (input.cells && Object.keys(input.cells).length > 0) {
+        const validProperties = db
+          .select({ id: databaseProperties.id })
+          .from(databaseProperties)
+          .where(eq(databaseProperties.pageId, pageId))
+          .all();
+        const validPropertyIds = new Set(validProperties.map((p) => p.id));
+        const invalidId = Object.keys(input.cells).find((pid) => !validPropertyIds.has(pid));
+        if (invalidId) {
+          return c.json({ error: "Invalid property ID in cells" }, 400);
+        }
+      }
 
       db.transaction(() => {
         db.insert(databaseRows)

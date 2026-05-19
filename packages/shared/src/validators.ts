@@ -25,10 +25,11 @@ const coverImageSchema = z
   .max(2048)
   .refine(
     (value) =>
-      value.startsWith("https://") || value.startsWith("/uploads/"),
+      value.startsWith("https://") ||
+      /^\/uploads\/covers\/[\w-]+\/[\w-]+\.[a-z]+$/.test(value),
     {
       message:
-        "coverImage must be an https:// URL or an internal /uploads/ path",
+        "coverImage must be an https:// URL or a valid internal /uploads/covers/ path",
     }
   );
 
@@ -75,7 +76,7 @@ export const updatePropertySchema = z.object({
 });
 
 export const reorderPropertiesSchema = z.object({
-  propertyIds: z.array(z.string()),
+  propertyIds: z.array(z.string()).min(1),
 });
 
 export const createRowSchema = z.object({
