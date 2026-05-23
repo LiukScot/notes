@@ -325,9 +325,12 @@ export const pageRoutes = new Hono<AuthEnv>()
     }
 
     const now = Date.now();
+    const MAX_ARCHIVE_DEPTH = 100;
     db.transaction(() => {
-      // Archive the page and all its descendants recursively
-      const archiveRecursive = (pageId: string) => {
+      const archiveRecursive = (pageId: string, depth = 0) => {
+        if (depth >= MAX_ARCHIVE_DEPTH) {
+          throw new Error(`Page tree exceeds maximum depth of ${MAX_ARCHIVE_DEPTH}`);
+        }
         db.update(pages)
           .set({ archivedAt: now, updatedAt: now })
           .where(and(eq(pages.id, pageId), eq(pages.createdBy, user.id), isNull(pages.archivedAt)))
@@ -340,7 +343,7 @@ export const pageRoutes = new Hono<AuthEnv>()
           .all();
 
         for (const child of children) {
-          archiveRecursive(child.id);
+          archiveRecursive(child.id, depth + 1);
         }
       };
 

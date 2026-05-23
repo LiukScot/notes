@@ -22,6 +22,8 @@ interface EditorProps {
   editable?: boolean;
 }
 
+const AUTOSAVE_DEBOUNCE_MS = 1000;
+
 export function Editor({ pageId, initialContent, editable = true }: EditorProps) {
   const theme = useSyncExternalStore(subscribeTheme, getTheme);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -50,7 +52,7 @@ export function Editor({ pageId, initialContent, editable = true }: EditorProps)
     if (saveTimerRef.current) {
       clearTimeout(saveTimerRef.current);
     }
-    saveTimerRef.current = setTimeout(saveContent, 1000);
+    saveTimerRef.current = setTimeout(saveContent, AUTOSAVE_DEBOUNCE_MS);
   }, [editable, saveContent]);
 
   // Save on unmount

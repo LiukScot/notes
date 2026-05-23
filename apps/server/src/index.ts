@@ -17,6 +17,8 @@ app.use(async (c, next) => {
   await next();
   c.header("X-Content-Type-Options", "nosniff");
   c.header("X-Frame-Options", "DENY");
+  c.header("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  c.header("Referrer-Policy", "strict-origin-when-cross-origin");
 });
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
