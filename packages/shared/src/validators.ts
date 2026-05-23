@@ -34,7 +34,7 @@ const coverImageSchema = z
   );
 
 export const updatePageSchema = z.object({
-  title: z.string().optional(),
+  title: z.string().min(1).optional(),
   icon: z.string().nullable().optional(),
   coverImage: coverImageSchema.nullable().optional(),
   parentPageId: z.string().nullable().optional(),
@@ -91,7 +91,6 @@ export type SignupInput = z.infer<typeof signupSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type CreatePageInput = z.infer<typeof createPageSchema>;
 export type UpdatePageInput = z.infer<typeof updatePageSchema>;
-export type ReorderPagesInput = z.infer<typeof reorderPagesSchema>;
 export type CreateDatabaseInput = z.infer<typeof createDatabaseSchema>;
 export type CreatePropertyInput = z.infer<typeof createPropertySchema>;
 export type UpdatePropertyInput = z.infer<typeof updatePropertySchema>;
