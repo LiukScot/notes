@@ -42,6 +42,7 @@ if (tableExists("pages")) {
   sqlite.exec(`
     CREATE INDEX IF NOT EXISTS idx_pages_created_by_archived ON pages(created_by, archived_at);
     CREATE INDEX IF NOT EXISTS idx_pages_parent_page_id ON pages(parent_page_id);
+    CREATE INDEX IF NOT EXISTS idx_pages_sort_order ON pages(created_by, archived_at, parent_page_id, sort_order);
   `);
 }
 
@@ -76,7 +77,9 @@ if (tableExists("sessions")) {
   `);
 
   // Cleanup expired sessions on startup
-  sqlite.prepare("DELETE FROM sessions WHERE expires_at < ?").run(Date.now());
+  const cleanupStmt = sqlite.prepare("DELETE FROM sessions WHERE expires_at < ?");
+  cleanupStmt.run(Date.now());
+  cleanupStmt.finalize();
 }
 
 if (tableExists("links")) {

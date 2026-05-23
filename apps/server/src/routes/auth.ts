@@ -98,7 +98,7 @@ export const authRoutes = new Hono()
     });
   })
 
-  .post("/logout", async (c) => {
+  .post("/logout", authMiddleware, async (c) => {
     const token = getCookie(c, "session");
     if (token) {
       db.delete(sessions).where(eq(sessions.token, token)).run();

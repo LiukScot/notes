@@ -12,3 +12,7 @@ apps/server/data/
 .DS_Store
 Thumbs.db
 mylocal.*
+*.pem
+*.key
+*.p12
+*.p8

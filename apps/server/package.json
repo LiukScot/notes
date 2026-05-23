@@ -15,7 +15,7 @@
     "@hono/zod-validator": "^0.8.0",
     "@notes/shared": "workspace:*",
     "drizzle-orm": "^0.45",
-    "hono": "^4",
+    "hono": "^4.12.18",
     "nanoid": "^5",
     "zod": "^4.4"
   },
