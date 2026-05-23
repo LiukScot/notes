@@ -328,7 +328,7 @@ export const pageRoutes = new Hono<AuthEnv>()
     const MAX_ARCHIVE_DEPTH = 100;
     db.transaction(() => {
       const archiveRecursive = (pageId: string, depth = 0) => {
-        if (depth > MAX_ARCHIVE_DEPTH) {
+        if (depth >= MAX_ARCHIVE_DEPTH) {
           throw new Error(`Page tree exceeds maximum depth of ${MAX_ARCHIVE_DEPTH}`);
         }
         db.update(pages)
