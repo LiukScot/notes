@@ -215,7 +215,7 @@ before any of the rules below.
   shell injection.
 - Do not skip CI hooks (`--no-verify`, `[skip ci]`, `[ci skip]`)
   without an explicit reason in the PR description.
-- Every new test added must run in a CI job, and every new CI job that gates correctness must be added to `main`'s required status checks in the same PR 
+- Every new test added must run in a CI job, and every new CI job that gates correctness must be added to `main`'s required status checks in the same PR.
 
 ## 15. Accessibility (frontend)
 
