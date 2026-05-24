@@ -79,3 +79,51 @@ jobs:
       - name: Run web component tests
         working-directory: apps/web
         run: bunx vitest run
+
+  # Builds the production Docker image the same way the host does, boots a
+  # container, and asserts the server's /healthz endpoint answers. Catches:
+  #   - bun.lock / package.json drift (--frozen-lockfile in Dockerfile fails)
+  #   - bad .dockerignore that leaks host node_modules and breaks symlinks
+  #   - migrate.ts runtime failures (Cannot find module, schema drift, etc.)
+  #   - any crash on first boot
+  # None of the typecheck / unit jobs exercise the real container start.
+  docker-smoke:
+    name: Docker build + smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: notes:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Boot container
+        run: |
+          docker run -d --name notes-smoke -p 3000:3000 \
+            -e ALLOWED_ORIGINS=http://localhost:3000 notes:ci
+      - name: Wait for /healthz (max 30s)
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:3000/healthz | grep -q '"ok":true'; then
+              echo "healthz OK after ${i}s"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::/healthz never responded; container logs:"
+          docker logs notes-smoke || true
+          exit 1
+      - name: Assert no fatal errors in logs
+        run: |
+          if docker logs notes-smoke 2>&1 | grep -E 'Cannot find module|SyntaxError|unhandledRejection|^error:'; then
+            echo "::error::container logged a fatal error during boot"
+            docker logs notes-smoke
+            exit 1
+          fi
+      - name: Stop container
+        if: always()
+        run: docker rm -f notes-smoke || true

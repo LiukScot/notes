@@ -43,6 +43,11 @@ app.use(
   })
 );
 
+// Liveness probe: used by Docker HEALTHCHECK and CI smoke test to detect
+// when the server is up before checking real routes. Returns a fixed payload
+// so the smoke test can grep for it.
+app.get("/healthz", (c) => c.json({ ok: true }));
+
 const api = app
   .basePath("/api")
   .route("/auth", authRoutes)
